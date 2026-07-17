@@ -1,0 +1,7 @@
+# Two runtime dependencies for the pipeline. The website needs neither of
+# them: site/ is plain HTML/CSS/JS and reads one committed JSON file.
+
+requests>=2.31    # HTTP client used to query the Wikidata SPARQL endpoint
+pandas>=2.0       # reads the curated CSV and reshapes it into JSON
+
+pytest>=7.4       # test runner (development only)
