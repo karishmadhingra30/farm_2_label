@@ -205,12 +205,32 @@ the shortfall does not force a weak row in.
 
 ---
 
-## 7. Open decisions
-
-Recorded here as they are made.
+## 7. Decisions made during the research
 
 - **Verified date.** Rows carry the real date of the lookup. The commit dates
   in this repository were set by hand while the project was being written up,
   so a row's `verified_on` may sit outside the date of the commit that added
   it. The dataset date is the true one, because it is the date the page's
   "as of" claim rests on.
+
+- **National availability.** A brand has to be buyable across the US, in
+  grocery retail or from the brand's own national online store. This was added
+  after the candidate list was written. Without it the dataset could be filled
+  with small regional water-powered grist mills, which are genuinely
+  family-owned and would push the independent count up while telling you
+  nothing about an actual supermarket aisle. That would be the same sampling
+  error as the "brands that look small but are not" rule, running the other
+  way.
+
+- **`family_claim` covers founder-origin stories.** The signal list separates
+  `founder_name`, which needs a person's name in the brand itself, from
+  `family_claim`. A brand like Bear Naked has no person's name in it but sells
+  itself on a two-friends-in-a-kitchen origin story. That is a heritage claim
+  about the people behind the brand, so it is recorded as `family_claim` with
+  the story quoted in `signal_evidence`.
+
+- **A search summary is not a source.** While looking up Arrowhead Mills, a
+  search summary said the brand was sold to private equity in 2025. Opening
+  the actual articles showed the sale closed in 2019. Nothing goes in the CSV
+  that was not read on the page it is cited to. This is the single most useful
+  thing the two-source rule caught.
