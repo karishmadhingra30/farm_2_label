@@ -229,8 +229,64 @@ the shortfall does not force a weak row in.
   about the people behind the brand, so it is recorded as `family_claim` with
   the story quoted in `signal_evidence`.
 
+- **Two gap markers, not one.** `notes` can carry either of two markers and
+  they mean different things:
+
+  | Marker | Means |
+  |---|---|
+  | `unverified` | the **ownership** claim does not rest on two independently read sources |
+  | `origin_unconfirmed` | ownership is fine, but the brand's self-claimed home town is not cited to the brand's own page |
+
+  The first version had one marker for both. Flagging the origin gaps with it
+  put the serious badge on nine rows out of ten, which buried the single row
+  whose ownership really was short of a source. A flag that fires on almost
+  everything is not a flag.
+
+  The origin gap is common for a mechanical reason: a lot of brand "our story"
+  pages render client-side and come back as navigation only, and some brands
+  make no origin claim at all. Those rows keep their ownership standing and
+  lose only their line on the map.
+
+- **Large family-controlled companies are `private_company`, not
+  `family_owned`.** Mars, Incorporated is privately held by one family, and it
+  is also a diversified multinational. Putting it in the same bucket as a
+  six-generation grist mill would inflate the "independent, family-owned or
+  employee-owned" count and mislead the reader about what that number means.
+  So `family_owned` is reserved for companies where the family owners run a
+  single-brand or small-portfolio business, and the family control of a large
+  private company is recorded in `notes` instead.
+
+- **Wikidata could not be used as a second source.** The plan was to use
+  Wikidata's `owned by` (P127) and `parent organization` (P749) as one of the
+  two sources on many rows. Both `query.wikidata.org/sparql` and
+  `www.wikidata.org/w/api.php` refused the requests made while curating, so
+  every second source is a press release, a filing, trade press, or a company
+  page instead. That is a stronger dataset than one leaning on a
+  volunteer-edited database, so the constraint improved the result.
+
+  `pipeline/validate.py` still implements the cross-check in full and it runs
+  normally from a laptop. It is deliberately not run in CI, because a
+  volunteer-edited database going stale should never be able to block a deploy.
+
 - **A search summary is not a source.** While looking up Arrowhead Mills, a
   search summary said the brand was sold to private equity in 2025. Opening
   the actual articles showed the sale closed in 2019. Nothing goes in the CSV
   that was not read on the page it is cited to. This is the single most useful
   thing the two-source rule caught.
+
+## 8. Still outstanding
+
+- The dataset holds 10 rows against a target of 40 to 50. The shortfall is
+  research throughput, not the selection rule: the candidate list in section 6
+  has 57 entries and most of them are still unresearched. Section 6 is the
+  work queue.
+- `Larabar`, `Mom's Best`, `Malt-O-Meal`, `Nature's Path`, `Weisenberger
+  Mill`, `Anson Mills`, `Hungry Jack`, `Martha White`, `Jim Dandy`, `Birch
+  Benders`, `Nature's Bakery`, `Clif Bar`'s founder-name evidence, `Quaker
+  Oats` and `Pearl Milling Company` all have one confirmed source or a
+  confirmed fact already in hand and need their second source opened before
+  they can be added.
+- `Alpen`, `Malt-O-Meal`, `Puffins`, `Cream of Wheat` and `Krusteaz` were
+  dropped on the signal test rather than the sourcing test: their branding does
+  not lean on a farm, a family, a place or a founder, whatever their ownership
+  turns out to be.
