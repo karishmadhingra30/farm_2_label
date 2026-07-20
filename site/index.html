@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- width=device-width tells a phone to lay the page out at its own width
+     instead of pretending to be a 980px desktop and zooming out. Without this
+     line every font on the page arrives too small to read. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who Owns the Family Farm</title>
+<meta name="description" content="A sourced dataset of breakfast-aisle brands that sell themselves with a farm, a family, or a founder's name, and who owns each one today.">
+
+<!-- Leaflet's stylesheet has to load before its script draws anything, or the
+     map tiles stack up in the wrong places. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<!-- ======================================================================
+     1. Headline and the one-sentence answer.
+
+     The numbers in here are written by script from the committed JSON. They
+     are not typed into this file, so the sentence cannot disagree with the
+     data behind it.
+     ====================================================================== -->
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Breakfast aisle ownership</span>
+    <h1>Who really owns the family farm on your cereal box?</h1>
+    <p class="hero__answer" id="answer">
+      <span class="state">Loading the dataset…</span>
+    </p>
+    <p class="hero__asof" id="asof"></p>
+  </div>
+</header>
+
+<!-- ======================================================================
+     2. Summary tiles.
+     ====================================================================== -->
+<section id="summary" class="section--tight">
+  <div class="wrap">
+    <h2 class="sr-only">Summary</h2>
+    <ul class="tiles" id="tiles"></ul>
+    <p class="note" id="summary-note"></p>
+  </div>
+</section>
+
+<!-- ======================================================================
+     3. Ownership tree.
+
+     Brands on the left flow into their ultimate parent on the right. The
+     point of the shape is that you can see concentration without reading a
+     single number: a handful of thick bundles on the right means a handful
+     of companies own most of the left-hand column.
+     ====================================================================== -->
+<section id="tree-section">
+  <div class="wrap">
+    <span class="eyebrow">The tree</span>
+    <h2>Brands on the left, their owners on the right</h2>
+    <p class="lede">
+      Each brand is a row on the left. Follow its line to the company at the
+      top of its ownership chain. Colour is the kind of owner. Tap or hover a
+      brand for its branding signal, its full ownership chain, and its
+      sources. Selecting a brand also highlights it on the map below.
+    </p>
+
+    <ul class="legend" id="legend"></ul>
+
+    <div class="chart-frame">
+      <div class="chart-scroll">
+        <div id="tree"></div>
+      </div>
+    </div>
+    <p class="note" id="tree-note"></p>
+  </div>
+</section>
+
+<!-- ======================================================================
+     4. Geographic map.
+
+     Two points per brand: where the brand says it is from, and where its
+     parent company is run from. The line between them is the distance
+     between the story and the structure.
+     ====================================================================== -->
+<section id="map-section">
+  <div class="wrap">
+    <span class="eyebrow">The map</span>
+    <h2>Where the brand says it is from, and where its owner sits</h2>
+    <p class="lede">
+      The small marker is the brand's self-claimed home, taken from the
+      brand's own page. The larger marker is the parent company's
+      headquarters. Where the two are the same place, the marker sits on its
+      own with no line.
+    </p>
+
+    <div class="controls">
+      <div class="segmented" role="group" aria-label="Filter the map by owner type">
+        <button class="segmented__btn" type="button" data-filter="all" aria-pressed="true">All brands</button>
+        <button class="segmented__btn" type="button" data-filter="large" aria-pressed="false">Owned by a large company</button>
+        <button class="segmented__btn" type="button" data-filter="independent" aria-pressed="false">Independent</button>
+      </div>
+    </div>
+
+    <div id="map"></div>
+    <p class="note" id="map-note"></p>
+  </div>
+</section>
+
+<!-- ======================================================================
+     5. Brand table. Every row, every source, every date.
+     ====================================================================== -->
+<section id="table-section">
+  <div class="wrap">
+    <span class="eyebrow">The data</span>
+    <h2>Every brand we checked</h2>
+    <p class="lede">
+      Search by brand, owner, category, or place. Click a column heading to
+      sort. Every ownership claim links to its two sources and carries the
+      date it was checked.
+    </p>
+
+    <div class="controls">
+      <label class="search">
+        <span class="sr-only">Search brands</span>
+        <input type="search" id="table-search" placeholder="Search brand, owner, category, place…" autocomplete="off">
+      </label>
+    </div>
+
+    <div class="table-scroll">
+      <table id="brand-table">
+        <thead>
+          <tr id="table-head"></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+      <p class="table-status" id="table-status"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================
+     6. Method.
+     ====================================================================== -->
+<section id="method">
+  <div class="wrap prose">
+    <span class="eyebrow">Method</span>
+    <h2>How this was built</h2>
+
+    <h3>How brands were chosen</h3>
+    <p>
+      A brand is in the dataset if its name, its packaging, or its own
+      "our story" page leans on a farm, a family, a homestead, a place of
+      origin, or a named founder. The signal has to be something the brand
+      itself puts forward. A company that happens to be family-owned but never
+      says so does not qualify, and a company that says "family-owned since"
+      does qualify whether or not it still is.
+    </p>
+    <p>
+      The rule is deliberately blind to who owns the brand. The obvious
+      alternative, picking "brands that look small but are not", would build
+      the answer into the selection by excluding every brand that looks small
+      and is small. Those brands are in here, and they are the reason the
+      finding is worth anything.
+    </p>
+    <p>
+      Scope is the breakfast aisle only: cold cereal, granola, oatmeal and hot
+      cereal, breakfast bars, and pancake and waffle mix. Syrup, yoghurt,
+      coffee, and frozen waffles are breakfast, but they are not this aisle.
+    </p>
+
+    <h3>How ownership was verified</h3>
+    <ul>
+      <li>
+        <b>Two independent sources per claim.</b> Where possible one of them is
+        the parent company's own material: its brands page, its investor
+        page, or its annual report. The second is independent of the first: a
+        deal announcement, trade press, a filing, or Wikidata.
+      </li>
+      <li>
+        <b>Nothing from memory.</b> Brand ownership moves through
+        acquisitions, spinoffs, and private equity sales. Every row was looked
+        up.
+      </li>
+      <li>
+        <b>A Wikidata cross-check.</b> A script queries Wikidata for each
+        brand's "owned by" and "parent organization" properties and compares
+        them with the dataset. A disagreement is not treated as an error and
+        is never auto-corrected. Wikidata is volunteer-edited and goes stale,
+        so a disagreement is a prompt to recheck the row by hand, and the
+        decision is written into that row's notes.
+      </li>
+      <li>
+        <b>Failures stay visible.</b> A row that could not get everything it
+        needed is kept and flagged, rather than dropped. Dropping it would
+        hide the weakest part of the dataset.
+      </li>
+      <li>
+        <b>Ownership is as of the verified date</b> on each row, shown in the
+        table and summarised in the footer.
+      </li>
+    </ul>
+
+    <h3>How the page works</h3>
+    <p>
+      The dataset is a hand-curated CSV in the repository. A Python script
+      validates it and cross-checks it against Wikidata. A second script turns
+      it into one JSON file, which is committed. This page reads that file and
+      makes no API calls of its own, so it keeps working regardless of what
+      happens to any service it was built from.
+    </p>
+  </div>
+</section>
+
+<!-- ======================================================================
+     7. Limits. Stated plainly, because every one of them is real.
+     ====================================================================== -->
+<section id="limits">
+  <div class="wrap prose">
+    <span class="eyebrow">Limits</span>
+    <h2>What this does not show</h2>
+    <ul>
+      <li>
+        <b>Ownership changes.</b> These rows are a snapshot on the dates
+        shown. A brand can be sold the week after it is checked, and private
+        equity holdings in particular turn over fast.
+      </li>
+      <li>
+        <b>A big owner does not mean a worse product.</b> Nothing here
+        measures quality, ingredients, farming practice, or how workers are
+        treated. Ownership is a fact about a corporate structure, and that is
+        all it is.
+      </li>
+      <li>
+        <b>Brand origin is the brand's own claim.</b> The origin city is what
+        the brand says about itself on its own page. It is not a check on
+        where anything is grown, milled, or made today.
+      </li>
+      <li>
+        <b>This is one aisle, not the food system.</b> Around fifty brands in
+        five breakfast categories is a sample chosen by a branding rule. The
+        concentration measured here is concentration within this sample, not a
+        market share and not a claim about groceries in general.
+      </li>
+      <li>
+        <b>The ownership chain is simplified.</b> Real structures include
+        intermediate holding companies, minority stakes, licensing deals, and
+        regional rights that can differ by country. The dataset records a
+        direct owner and an ultimate parent, and the tree uses the ultimate
+        parent.
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================================================================
+     8. Footer and credits.
+     ====================================================================== -->
+<footer>
+  <div class="wrap">
+    <p id="footer-verified"></p>
+    <p>
+      Ownership data hand-curated from company materials, filings, and news
+      reports, cross-checked against
+      <a href="https://www.wikidata.org/" rel="noopener">Wikidata</a>
+      (CC0). Map tiles by
+      <a href="https://carto.com/attributions" rel="noopener">CARTO</a>,
+      data by
+      <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a>
+      contributors. Charts built with
+      <a href="https://d3js.org/" rel="noopener">D3</a>
+      and
+      <a href="https://leafletjs.com/" rel="noopener">Leaflet</a>.
+    </p>
+    <p>
+      Brand names appear as plain text. No logos or packaging images are used
+      anywhere on this page.
+      <a href="https://github.com/karishmadhingra30/farm_2_label" rel="noopener">Source and dataset on GitHub</a>.
+    </p>
+  </div>
+</footer>
+
+<!-- The floating tooltip used by both the tree and the map. It lives at the
+     end of the body so it paints above everything without a z-index war. -->
+<div class="tooltip" id="tooltip" role="tooltip" aria-hidden="true"></div>
+
+
+<!-- ======================================================================
+     Scripts.
+
+     Loaded in dependency order, and without `defer`, so each one can assume
+     the previous is ready:
+       d3          the visualisation toolkit, used for the tree
+       d3-sankey   the plugin that computes the flow layout D3 does not ship
+       leaflet     the map library
+     then this project's three view modules, then the bootstrap below.
+     ====================================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="tree.js"></script>
+<script src="map.js"></script>
+<script src="table.js"></script>
+
+<script>
+/* =========================================================================
+   Bootstrap.
+
+   Why this sits here rather than in its own file: it is the only code that
+   knows about all three views at once. Its whole job is to load the data,
+   write the prose numbers, and wire the three modules together. Keeping it
+   beside the markup it fills in makes that relationship easy to follow.
+   ========================================================================= */
+(function () {
+  "use strict";
+
+  /* Human-readable names for the parent_type values. The CSV uses
+     snake_case because it is a data file; the page should not. */
+  var TYPE_LABELS = {
+    public_company: "Public company",
+    private_company: "Private company",
+    private_equity: "Private equity",
+    cooperative: "Cooperative",
+    employee_owned: "Employee-owned",
+    family_owned: "Family-owned",
+    independent: "Independent"
+  };
+
+  /* The fixed order the colours are assigned in. This never changes and is
+     never cycled: if a filter hides some types, the ones still on screen
+     keep the colour they had. The CSS holds the actual hex values, one
+     custom property per type, so light and dark swap in one place. */
+  var TYPE_ORDER = [
+    "public_company",
+    "private_company",
+    "private_equity",
+    "cooperative",
+    "employee_owned",
+    "family_owned",
+    "independent"
+  ];
+
+  /* Owner types that count as "not a large diversified company". Kept in
+     step with NOT_CONGLOMERATE_TYPES in pipeline/build.py. */
+  var SMALL_OWNER_TYPES = {
+    independent: true,
+    family_owned: true,
+    employee_owned: true,
+    cooperative: true
+  };
+
+  /* ---------------------------------------------------------------------
+     Shared helpers, handed to each view module so there is one definition
+     of a colour, a label, and a tooltip.
+     --------------------------------------------------------------------- */
+
+  var tooltipEl = document.getElementById("tooltip");
+
+  var helpers = {
+    typeLabels: TYPE_LABELS,
+    typeOrder: TYPE_ORDER,
+    smallOwnerTypes: SMALL_OWNER_TYPES,
+
+    /* Returns the CSS custom property reference for a type, not a hex
+       value. Handing SVG `var(--type-x)` means the chart recolours itself
+       when the reader switches to dark mode, with no redraw. */
+    colorFor: function (parentType) {
+      return TYPE_ORDER.indexOf(parentType) === -1
+        ? "var(--node-brand)"
+        : "var(--type-" + parentType + ")";
+    },
+
+    labelFor: function (parentType) {
+      return TYPE_LABELS[parentType] || parentType;
+    },
+
+    isSmallOwner: function (parentType) {
+      return Boolean(SMALL_OWNER_TYPES[parentType]);
+    },
+
+    /* Escapes text before it goes anywhere near innerHTML. Brand names come
+       from a CSV in this repository rather than from a stranger, so this is
+       belt and braces, but a name with an ampersand in it would otherwise
+       render wrong. */
+    escape: function (value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    },
+
+    /* Turns 2026-09-22 into 22 September 2026. Written by hand rather than
+       with toLocaleDateString, because parsing "2026-09-22" as a Date makes
+       it midnight UTC, which renders as the previous day for anyone west of
+       Greenwich. */
+    formatDate: function (iso) {
+      var months = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+      var parts = String(iso || "").split("-");
+      if (parts.length !== 3) return iso || "";
+      var month = months[parseInt(parts[1], 10) - 1];
+      if (!month) return iso;
+      return parseInt(parts[2], 10) + " " + month + " " + parts[0];
+    },
+
+    /* Builds the tooltip body for one brand. Both the tree and the map show
+       the same card, so it is defined once. */
+    tooltipHTML: function (brand) {
+      var esc = helpers.escape;
+      var html = '<div class="tooltip__title">' + esc(brand.brand) + "</div>";
+
+      html += '<span class="tooltip__row">Signal: <b>' +
+        esc(helpers.signalLabel(brand.qualifying_signal)) + "</b></span>";
+
+      if (brand.signal_evidence) {
+        html += '<span class="tooltip__row">' + esc(brand.signal_evidence) + "</span>";
+      }
+
+      /* The chain, shown with arrows so a two-level structure is visible
+         rather than flattened away. */
+      var chain = brand.has_intermediate_owner
+        ? brand.brand + " → " + brand.direct_owner + " → " + brand.ultimate_parent
+        : brand.brand + " → " + brand.ultimate_parent;
+      html += '<div class="tooltip__chain">' + esc(chain) + "</div>";
+
+      html += '<span class="tooltip__row">Owner type: <b>' +
+        esc(helpers.labelFor(brand.parent_type)) + "</b></span>";
+
+      if (brand.brand_origin && brand.brand_origin.city) {
+        html += '<span class="tooltip__row">Says it is from: <b>' +
+          esc(brand.brand_origin.city) +
+          (brand.brand_origin.state ? ", " + esc(brand.brand_origin.state) : "") +
+          "</b></span>";
+      }
+      if (brand.parent_hq && brand.parent_hq.city) {
+        html += '<span class="tooltip__row">Owner HQ: <b>' +
+          esc(brand.parent_hq.city) +
+          (brand.parent_hq.state ? ", " + esc(brand.parent_hq.state) : "") +
+          "</b></span>";
+      }
+
+      html += '<span class="tooltip__row">' + brand.sources.length +
+        " source" + (brand.sources.length === 1 ? "" : "s") +
+        ", checked " + esc(helpers.formatDate(brand.verified_on)) + "</span>";
+
+      if (brand.unverified || brand.origin_unconfirmed) {
+        html += '<span class="tooltip__row"><b>' +
+          (brand.unverified ? "Ownership not double-sourced" : "Origin not confirmed") +
+          ":</b> " + esc(brand.notes) + "</span>";
+      }
+
+      html += '<span class="tooltip__hint">Sources are linked in the table below.</span>';
+      return html;
+    },
+
+    signalLabel: function (signal) {
+      var labels = {
+        farm_name: "farm or mill in the name",
+        founder_name: "a founder's name",
+        family_claim: "a family claim",
+        origin_place: "a place of origin",
+        farm_imagery: "farm imagery on the pack"
+      };
+      return labels[signal] || signal;
+    },
+
+    /* One tooltip element, positioned near the pointer and nudged back
+       inside the viewport so it never hangs off the right edge on a phone. */
+    showTooltip: function (html, x, y) {
+      tooltipEl.innerHTML = html;
+      tooltipEl.classList.add("is-visible");
+      tooltipEl.setAttribute("aria-hidden", "false");
+
+      var box = tooltipEl.getBoundingClientRect();
+      var pad = 12;
+      var left = x + 14;
+      var top = y + 14;
+      if (left + box.width > window.innerWidth - pad) {
+        left = Math.max(pad, x - box.width - 14);
+      }
+      if (top + box.height > window.innerHeight - pad) {
+        top = Math.max(pad, y - box.height - 14);
+      }
+      tooltipEl.style.left = left + "px";
+      tooltipEl.style.top = top + "px";
+    },
+
+    hideTooltip: function () {
+      tooltipEl.classList.remove("is-visible");
+      tooltipEl.setAttribute("aria-hidden", "true");
+    }
+  };
+
+  /* ---------------------------------------------------------------------
+     Selection. One brand name, or null. This is the only shared mutable
+     state on the page, and it is the thing that links the tree to the map
+     and the table.
+     --------------------------------------------------------------------- */
+
+  var selected = null;
+  var views = [];
+
+  function setSelection(brandName) {
+    /* Clicking the selected brand again clears the selection, which is what
+       a reader expects from a toggle. */
+    selected = selected === brandName ? null : brandName;
+    views.forEach(function (view) {
+      if (typeof view.onSelect === "function") view.onSelect(selected);
+    });
+  }
+
+  /* ---------------------------------------------------------------------
+     Prose: the headline sentence and the tiles
+     --------------------------------------------------------------------- */
+
+  function renderAnswer(data) {
+    var s = data.summary;
+    var pct = Math.round(s.top_n_share * 1000) / 10;
+    var namedTop = s.top_n_parents.map(function (p) { return p.name; });
+
+    /* The sentence is assembled from the data, so a low concentration reads
+       as a low concentration instead of being dressed up. The opening phrase
+       is the only judgement in it, and the threshold is stated plainly: a
+       majority of the sample under three owners, or not. */
+    var lead = s.top_n_share >= 0.5
+      ? "Yes, mostly."
+      : "Less than the branding suggests, but not by much.";
+
+    var html = "<strong>" + lead + "</strong> Of the " + s.total_brands +
+      " breakfast-aisle brands that sell themselves with a farm, a family, a " +
+      "place, or a founder's name, <strong>" + s.top_n_brand_count +
+      "</strong> are owned by just " + s.top_n + " companies, which is " +
+      "<strong>" + pct.toFixed(1) + "%</strong> of the sample. ";
+
+    if (s.not_conglomerate_count > 0) {
+      html += "The other side of the finding: <strong>" +
+        s.not_conglomerate_count + "</strong> of them really are independent, " +
+        "family-owned, employee-owned, or a cooperative.";
+    } else {
+      html += "Not one of them is independent, family-owned, employee-owned, " +
+        "or a cooperative.";
+    }
+
+    document.getElementById("answer").innerHTML = html;
+
+    document.getElementById("asof").textContent =
+      "Ownership as of each row's verified date. Most recent check: " +
+      helpers.formatDate(s.last_verified) + ". " +
+      namedTop.slice(0, 3).join(", ") + " are the three largest owners in this sample.";
+  }
+
+  function renderTiles(data) {
+    var s = data.summary;
+    var pct = (Math.round(s.top_n_share * 1000) / 10).toFixed(1);
+
+    var tiles = [
+      {
+        value: String(s.total_brands),
+        label: "Brands checked",
+        sub: "across " + Object.keys(s.counts_by_category).length +
+          " breakfast categories"
+      },
+      {
+        value: pct + "%",
+        label: "Owned by the top " + s.top_n + " parents",
+        sub: s.top_n_brand_count + " of " + s.total_brands + " brands"
+      },
+      {
+        value: String(s.not_conglomerate_count),
+        label: "Independent, family-, employee-owned or co-op",
+        sub: "the control group, and the reason this is credible"
+      },
+      {
+        value: String(s.total_parents),
+        label: "Distinct ultimate parents",
+        sub: s.unverified_count === 0
+          ? "every ownership claim double-sourced"
+          : s.unverified_count + " of " + s.total_brands +
+            " ownership claims not yet double-sourced"
+      }
+    ];
+
+    document.getElementById("tiles").innerHTML = tiles.map(function (t) {
+      return '<li class="tile">' +
+        '<span class="tile__value">' + helpers.escape(t.value) + "</span>" +
+        '<span class="tile__label">' + helpers.escape(t.label) + "</span>" +
+        '<span class="tile__sub">' + helpers.escape(t.sub) + "</span>" +
+        "</li>";
+    }).join("");
+
+    /* Spell out the by-type breakdown in words under the tiles, so the
+       colours in the tree are never the only way to read the split. */
+    var parts = TYPE_ORDER.filter(function (type) {
+      return s.counts_by_parent_type[type];
+    }).map(function (type) {
+      return s.counts_by_parent_type[type] + " " + helpers.labelFor(type).toLowerCase();
+    });
+    document.getElementById("summary-note").textContent =
+      "By owner type: " + parts.join(", ") + ".";
+  }
+
+  function renderLegend(data) {
+    /* Only the types actually present get a legend entry, so the legend
+       never promises a colour the chart does not use. */
+    var present = TYPE_ORDER.filter(function (type) {
+      return data.summary.counts_by_parent_type[type];
+    });
+    document.getElementById("legend").innerHTML = present.map(function (type) {
+      return '<li class="legend__item">' +
+        '<span class="legend__swatch" style="background:' +
+        helpers.colorFor(type) + '"></span>' +
+        helpers.escape(helpers.labelFor(type)) +
+        " (" + data.summary.counts_by_parent_type[type] + ")" +
+        "</li>";
+    }).join("");
+  }
+
+  function renderFooter(data) {
+    document.getElementById("footer-verified").textContent =
+      "Last verified " + helpers.formatDate(data.summary.last_verified) +
+      ". Every row carries its own verification date, shown in the table above.";
+  }
+
+  function renderNotes(data) {
+    var s = data.summary;
+    document.getElementById("tree-note").textContent =
+      "Brand count is brands in this dataset, not every brand a company owns. " +
+      "A parent with " + (s.top_n_parents[0] ? s.top_n_parents[0].brand_count : 0) +
+      " rows here may own many more breakfast brands in total.";
+
+    var withBoth = data.brands.filter(function (b) {
+      return b.brand_origin.lat != null && b.parent_hq.lat != null;
+    }).length;
+    document.getElementById("map-note").textContent =
+      withBoth + " of " + data.brands.length + " brands have coordinates for " +
+      "both their claimed origin and their owner's headquarters. " +
+      s.origin_unconfirmed_count + " row" +
+      (s.origin_unconfirmed_count === 1 ? " carries" : "s carry") +
+      " an origin that is not cited to the brand's own page, marked " +
+      "\u201corigin?\u201d in the table; a row with no origin at all draws no line.";
+  }
+
+  /* ---------------------------------------------------------------------
+     Start
+     --------------------------------------------------------------------- */
+
+  /* A chart that cannot be drawn says why, in its own box, rather than
+     leaving an empty rectangle. */
+  function unavailable(element, what, library) {
+    element.innerHTML = '<p class="state state--error">The ' + what +
+      " could not be drawn because " + library + " did not load. " +
+      "Every figure it would show is in the table below, which needs no " +
+      "external library.</p>";
+  }
+
+  function start(data) {
+    /* The prose, the tiles, the legend, and the table depend on nothing but
+       the JSON, so they are rendered first and unconditionally. If a CDN is
+       blocked or slow, the reader still gets the finding and the evidence.
+       The two charts are the parts that can fail, and they fail on their
+       own. */
+    renderAnswer(data);
+    renderTiles(data);
+    renderLegend(data);
+    renderNotes(data);
+    renderFooter(data);
+
+    /* The table is the page's fallback for everything, so it goes up before
+       either chart gets a chance to throw. */
+    views.push(window.BrandTable.init({
+      head: document.getElementById("table-head"),
+      body: document.getElementById("table-body"),
+      status: document.getElementById("table-status"),
+      search: document.getElementById("table-search"),
+      data: data,
+      helpers: helpers,
+      onSelect: setSelection
+    }));
+
+    /* Each module returns an object with an onSelect handler, which is how
+       a click in the tree reaches the map and the table.
+
+       The library checks are explicit. D3 does not ship a Sankey layout, so
+       the plugin has to be tested for separately: d3 loading without
+       d3-sankey would otherwise fail deeper in, with a less useful error. */
+    var treeEl = document.getElementById("tree");
+    if (typeof window.d3 === "undefined") {
+      unavailable(treeEl, "ownership tree", "D3");
+    } else if (typeof window.d3.sankey !== "function") {
+      unavailable(treeEl, "ownership tree", "the d3-sankey plugin");
+    } else {
+      views.push(window.OwnershipTree.init({
+        container: treeEl,
+        data: data,
+        helpers: helpers,
+        onSelect: setSelection
+      }));
+    }
+
+    var mapEl = document.getElementById("map");
+    if (typeof window.L === "undefined") {
+      unavailable(mapEl, "map", "Leaflet");
+      /* The filter buttons drive a map that is not there, so they are
+         disabled rather than left looking live. */
+      document.querySelectorAll("[data-filter]").forEach(function (button) {
+        button.disabled = true;
+      });
+    } else {
+      views.push(window.OriginMap.init({
+        container: mapEl,
+        buttons: document.querySelectorAll("[data-filter]"),
+        data: data,
+        helpers: helpers,
+        onSelect: setSelection
+      }));
+    }
+
+    /* The tree is laid out against the width of its container, so it has to
+       be recomputed when that width changes. Debounced, because a resize
+       fires continuously while a window is being dragged. */
+    var resizeTimer = null;
+    window.addEventListener("resize", function () {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(function () {
+        views.forEach(function (view) {
+          if (typeof view.onResize === "function") view.onResize();
+        });
+      }, 180);
+    });
+  }
+
+  /* Set once a message has been shown, so the two failure paths below
+     cannot overwrite each other and report the wrong cause. */
+  var reported = false;
+
+  function fail(message) {
+    reported = true;
+    document.getElementById("answer").innerHTML =
+      '<span class="state state--error">' + helpers.escape(message) + "</span>";
+  }
+
+  /* One fetch, of one committed file. This is the only network request the
+     page makes for data. */
+  fetch("data/brands.json", { cache: "no-cache" })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error("brands.json returned HTTP " + response.status);
+      }
+      return response.json();
+    })
+    .then(function (data) {
+      /* Rendering is wrapped separately from loading. Without this, a bug
+         anywhere in start() would be reported to the reader as "could not
+         load the dataset", which sends anyone debugging it to the wrong
+         file entirely. */
+      try {
+        start(data);
+      } catch (error) {
+        fail("The dataset loaded, but the page could not render it: " +
+          error.message);
+        throw error;  // rethrow so the full stack still reaches the console
+      }
+    })
+    .catch(function (error) {
+      if (reported) return;
+      fail("Could not load the dataset: " + error.message +
+        ". If you are viewing this from a local file, serve the folder with " +
+        "python -m http.server instead, because fetch is blocked on file:// URLs.");
+    });
+})();
+</script>
+
+</body>
+</html>

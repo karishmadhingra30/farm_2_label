@@ -1,0 +1,911 @@
+/* ==========================================================================
+   Styles for the farm-to-label page.
+
+   Why this file looks the way it does
+   -----------------------------------
+   The page is a short data story, read top to bottom, most often on a phone.
+   So the layout is one column at every width, and the only things that get
+   wider on a big screen are the two charts. There is no grid framework and no
+   build step, because a single stylesheet is easier to read than a
+   configuration file that generates one.
+
+   Every colour is declared once as a custom property (a "CSS variable") on
+   :root, and redeclared for dark mode in one place near the top. Nothing below
+   that block mentions a raw hex value. That means a colour change is a
+   one-line change, and light and dark cannot drift apart.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Design tokens
+   -------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces, from the page backdrop up to a raised card. */
+  --surface-page: #f7f7f5;
+  --surface-1: #fcfcfb;
+  --surface-2: #f0efec;
+  --border: #dcdbd6;
+  --border-strong: #bab9b2;
+
+  /* Ink. Text never wears a series colour, so these four carry all type. */
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #7a7973;
+  --text-inverse: #fcfcfb;
+
+  /* Categorical series colours, one per parent_type.
+     These are assigned in a fixed order and are never cycled or reassigned:
+     a filter that hides some types must not repaint the ones left on screen.
+
+     The set was checked with a colour-vision validator in both modes. In
+     light mode three of them fall below 3:1 contrast against the surface,
+     which is allowed only when identity is also carried by something other
+     than colour. It is: every node in the tree is directly labelled, every
+     marker on the map has a text tooltip, and the brand table below states
+     each owner in words. */
+  --type-public_company: #2a78d6;    /* blue    */
+  --type-private_company: #eb6834;   /* orange  */
+  --type-private_equity: #1baf7a;    /* aqua    */
+  --type-cooperative: #eda100;       /* yellow  */
+  --type-employee_owned: #e87ba4;    /* magenta */
+  --type-family_owned: #008300;      /* green   */
+  --type-independent: #4a3aa7;       /* violet  */
+
+  /* A neutral for brand nodes in the tree. Brands are not a category here;
+     the colour belongs to the owner, so the brand side stays grey. */
+  --node-brand: #9b9a94;
+
+  /* Reserved status colour, used only for the unverified flag. It never
+     doubles as a series colour, and it always ships with a text label. */
+  --flag: #d03b3b;
+  --flag-surface: #fdeceb;
+
+  /* Layout scale. One place to change the rhythm of the whole page. */
+  --measure: 68ch;        /* comfortable reading width for body text */
+  --wide: 1100px;         /* the charts are allowed this much room */
+  --gutter: 16px;         /* the side margin promised on phones */
+  --radius: 10px;
+  --radius-sm: 6px;
+
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Dark mode is a selected set of steps for a dark surface, not an inversion
+   of the light one. The same seven hues, restepped and revalidated against
+   the dark background. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --surface-page: #141413;
+    --surface-1: #1a1a19;
+    --surface-2: #24241f;
+    --border: #383835;
+    --border-strong: #55554f;
+
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #96958c;
+    --text-inverse: #141413;
+
+    --type-public_company: #3987e5;
+    --type-private_company: #d95926;
+    --type-private_equity: #199e70;
+    --type-cooperative: #c98500;
+    --type-employee_owned: #d55181;
+    --type-family_owned: #008300;
+    --type-independent: #9085e9;
+
+    --node-brand: #6f6e68;
+
+    --flag: #e66767;
+    --flag-surface: #3a1f1f;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset and base
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Stops iOS Safari inflating text in landscape. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  /* An explicit background, so the page never inherits a white default in
+     dark mode and flash-blinds the reader. */
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  /* No horizontal page scroll at any width. Individual wide elements scroll
+     inside themselves instead. */
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  margin: 0 0 0.5em;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: clamp(1.9rem, 5.5vw, 3rem);
+}
+
+h2 {
+  font-size: clamp(1.3rem, 3.5vw, 1.75rem);
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* A visible focus ring on every interactive thing, for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Page scaffolding
+   -------------------------------------------------------------------------- */
+
+.wrap {
+  /* One column width for the whole page, so every section shares the same
+     left edge. The charts and the table use all of it. Text does not: a
+     90-character line is hard to read, so the text blocks below cap
+     themselves at --measure instead. Constraining the container was tried
+     first, and it left the prose and the tiles starting at different x
+     positions, which reads as a misalignment. */
+  width: 100%;
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* Everything that is read as prose rather than scanned as data. */
+.hero h1,
+.hero__answer,
+.hero__asof,
+.lede,
+.prose,
+footer p {
+  max-width: var(--measure);
+}
+
+section {
+  padding: 2.75rem 0;
+}
+
+section + section {
+  border-top: 1px solid var(--border);
+}
+
+/* The tiles restate the headline, so they belong close to it rather than a
+   full section's breathing room away. */
+.section--tight {
+  padding-top: 0.5rem;
+}
+
+.eyebrow {
+  /* The small label above a section heading. */
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.lede {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+}
+
+.note {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   4. Hero: the headline and the one-sentence answer
+   -------------------------------------------------------------------------- */
+
+.hero {
+  padding: 3.5rem 0 1.5rem;
+}
+
+.hero__answer {
+  font-size: clamp(1.15rem, 3.2vw, 1.4rem);
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin: 0 0 1.25rem;
+}
+
+/* The number inside the answer sentence, so the eye lands on it. */
+.hero__answer strong {
+  font-weight: 700;
+}
+
+.hero__asof {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   5. Summary tiles
+   -------------------------------------------------------------------------- */
+
+.tiles {
+  display: grid;
+  /* Four tiles, and the column count is chosen so they never leave a single
+     orphan on its own row. Above 900px all four sit in one row; between 560
+     and 900 they go two by two; below that, one per row. auto-fit alone was
+     tried first and produced a 3 + 1 split at the reading width, which reads
+     as a mistake. */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 900px) {
+  .tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.tile {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.15rem;
+}
+
+.tile__value {
+  display: block;
+  /* Tabular figures so a column of numbers lines up. */
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.9rem, 5vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.tile__label {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.tile__sub {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   6. Legend, shared by the tree and the map
+   -------------------------------------------------------------------------- */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-secondary);
+}
+
+.legend__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+  /* A hairline ring so a pale swatch is still visible on a pale surface. */
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+}
+
+/* --------------------------------------------------------------------------
+   7. Ownership tree (D3 Sankey)
+   -------------------------------------------------------------------------- */
+
+.chart-frame {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+}
+
+.chart-scroll {
+  /* On a narrow screen the tree keeps its minimum readable width and scrolls
+     sideways inside this box, rather than squashing its labels or forcing the
+     whole page to scroll. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#tree svg {
+  display: block;
+  /* Set by tree.js; declared here so the element has a size before script
+     runs and the layout does not jump. */
+  height: auto;
+}
+
+/* Sankey link. Thin, translucent, and it thickens on hover rather than
+   changing colour, so the colour keeps meaning only one thing. */
+.sankey__link {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-opacity: 0.38;
+  transition: stroke-opacity 120ms ease;
+}
+
+.sankey__link.is-active {
+  stroke-opacity: 0.85;
+}
+
+.sankey__link.is-dimmed {
+  stroke-opacity: 0.1;
+}
+
+/* Sankey node. A 2px surface-coloured ring separates touching nodes, which
+   is what keeps two stacked colours from reading as one shape. */
+.sankey__node {
+  stroke: var(--surface-1);
+  stroke-width: 2;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+
+.sankey__node.is-dimmed {
+  opacity: 0.25;
+}
+
+.sankey__label {
+  font-size: 11px;
+  fill: var(--text-secondary);
+  pointer-events: none;
+  transition: fill 120ms ease;
+}
+
+.sankey__label--parent {
+  font-weight: 620;
+  fill: var(--text-primary);
+}
+
+.sankey__label.is-active {
+  fill: var(--text-primary);
+  font-weight: 650;
+}
+
+.sankey__label.is-dimmed {
+  fill: var(--text-muted);
+  opacity: 0.4;
+}
+
+.sankey__axis-label {
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  fill: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   8. Tooltip, shared by the tree and the map
+   -------------------------------------------------------------------------- */
+
+.tooltip {
+  position: fixed;
+  z-index: 40;
+  max-width: min(320px, calc(100vw - 2 * var(--gutter)));
+  background: var(--surface-1);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.14);
+  padding: 0.7rem 0.8rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 100ms ease;
+}
+
+.tooltip.is-visible {
+  opacity: 1;
+}
+
+.tooltip__title {
+  font-weight: 680;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+.tooltip__row {
+  display: block;
+  color: var(--text-secondary);
+  margin-bottom: 0.15rem;
+}
+
+.tooltip__row b {
+  color: var(--text-primary);
+  font-weight: 620;
+}
+
+.tooltip__chain {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0.35rem 0 0.2rem;
+  word-break: break-word;
+}
+
+.tooltip__hint {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   9. Controls: the map toggle and the table search
+   -------------------------------------------------------------------------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 3px;
+}
+
+.segmented__btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.85rem;
+  /* A 40px tall target, comfortably bigger than the text inside it. */
+  min-height: 34px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.segmented__btn:hover {
+  color: var(--text-primary);
+}
+
+.segmented__btn[aria-pressed="true"] {
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font-weight: 620;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+.search {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.search input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.search input::placeholder {
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   10. Map
+   -------------------------------------------------------------------------- */
+
+#map {
+  height: 520px;
+  border-radius: var(--radius);
+  /* Leaflet paints tiles into this box, so it needs an explicit background
+     for the moment before they load. */
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+/* Leaflet's own controls and attribution, nudged to match the page. */
+.leaflet-container {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+}
+
+.leaflet-container .leaflet-control-attribution {
+  background: rgb(252 252 251 / 0.85);
+  color: #52514e;
+}
+
+.leaflet-container .leaflet-control-attribution a {
+  color: #2a78d6;
+}
+
+/* The origin-to-headquarters line. Thin by default, thicker when its brand
+   is selected in the tree. */
+.map__line {
+  stroke-dasharray: 3 4;
+}
+
+.map__marker--selected {
+  /* A surface-coloured ring on the selected marker, so it separates from
+     whatever is under it. */
+  filter: drop-shadow(0 0 0 var(--surface-1));
+}
+
+/* --------------------------------------------------------------------------
+   11. Brand table
+   -------------------------------------------------------------------------- */
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+}
+
+table {
+  width: 100%;
+  /* Ten columns, one of which carries a sentence of evidence. At 760px the
+     evidence column squeezed to about twenty characters wide and every row
+     grew into a tall thin strip, so the minimum is set from the content
+     rather than from the viewport. The table scrolls sideways inside its own
+     box, so a wide minimum costs the page nothing. */
+  min-width: 1180px;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+/* The evidence cell is the only one with prose in it. It gets a real column
+   width, and long quotes are clamped to four lines with the full text on the
+   cell's title attribute, so one wordy row cannot make the table unreadable. */
+.cell-evidence {
+  max-width: 320px;
+  min-width: 260px;
+}
+
+.cell-evidence__text {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 0.3rem;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-2);
+  text-align: left;
+  font-weight: 650;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+thead th button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+thead th button:hover {
+  color: var(--text-primary);
+}
+
+/* The sort arrow. It is a text character rather than an icon font, so it
+   needs no extra request and inherits colour automatically. */
+.sort-arrow {
+  font-size: 0.7em;
+  color: var(--text-muted);
+}
+
+th[aria-sort] .sort-arrow {
+  color: var(--text-primary);
+}
+
+tbody td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--text-secondary);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+tbody tr:hover td {
+  background: var(--surface-2);
+}
+
+tbody tr.is-selected td {
+  background: var(--surface-2);
+  box-shadow: inset 3px 0 0 var(--text-primary);
+}
+
+.cell-brand {
+  color: var(--text-primary);
+  font-weight: 620;
+  white-space: nowrap;
+}
+
+.cell-owner {
+  color: var(--text-primary);
+}
+
+.cell-date {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+/* The coloured dot that ties a table row to its colour in the tree. */
+.dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 0.45rem;
+  vertical-align: 0.05em;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+}
+
+.pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* The unverified flag. Colour plus a word, never colour alone. */
+.flag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 650;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--flag-surface);
+  border: 1px solid var(--flag);
+  color: var(--flag);
+  white-space: nowrap;
+}
+
+/* The narrower gap badge. Same shape as .flag so it reads as the same kind
+   of thing, but in ink rather than the reserved status colour, because it is
+   a note about sourcing rather than a warning about the claim. */
+.flag--minor {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text-secondary);
+}
+
+.sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.sources a {
+  font-size: 0.78rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.sources a:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.table-status {
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   12. Method and limits
+   -------------------------------------------------------------------------- */
+
+.prose h3 {
+  margin-top: 1.5rem;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 1em;
+  padding-left: 1.2rem;
+}
+
+.prose li {
+  margin-bottom: 0.4rem;
+  color: var(--text-secondary);
+}
+
+.prose li b {
+  color: var(--text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   13. Footer
+   -------------------------------------------------------------------------- */
+
+footer {
+  padding: 2.5rem 0 3.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+footer p {
+  margin-bottom: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   14. Loading and error states
+   -------------------------------------------------------------------------- */
+
+.state {
+  padding: 2rem 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.state--error {
+  color: var(--flag);
+}
+
+/* Visually hidden but still read aloud by a screen reader. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   15. Narrow screens
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 560px) {
+  body {
+    font-size: 16px;
+  }
+
+  section {
+    padding: 2rem 0;
+  }
+
+  .hero {
+    padding: 2.5rem 0 1.75rem;
+  }
+
+  /* One tile per row reads better than two cramped ones. */
+  .tiles {
+    grid-template-columns: 1fr;
+  }
+
+  /* A shorter map, so it does not fill the whole screen and trap scrolling. */
+  #map {
+    height: 380px;
+  }
+
+  .segmented {
+    width: 100%;
+  }
+
+  .segmented__btn {
+    flex: 1 1 auto;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+/* Respect a reader who has asked for less movement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
