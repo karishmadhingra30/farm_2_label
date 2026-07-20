@@ -1,0 +1,510 @@
+{
+  "brands": [
+    {
+      "brand": "Cascadian Farm",
+      "category": "cereal",
+      "qualifying_signal": "farm_name",
+      "signal_evidence": "\"Farm\" in the brand name, and the brand's own page centres on a \"Home Farm\" in Skagit Valley started in 1972 by founder Gene Kahn",
+      "brand_origin": {
+        "city": "Skagit Valley",
+        "state": "WA",
+        "source": "https://www.cascadianfarm.com/about-us",
+        "lat": 48.4201,
+        "lon": -122.334
+      },
+      "direct_owner": "General Mills, Inc.",
+      "ultimate_parent": "General Mills, Inc.",
+      "parent_type": "public_company",
+      "parent_hq": {
+        "city": "Minneapolis",
+        "state": "MN",
+        "country": "USA",
+        "lat": 44.9778,
+        "lon": -93.265
+      },
+      "sources": [
+        "https://www.cascadianfarm.com/about-us",
+        "https://www.cornucopia.org/2014/09/general-mills-buys-annies-820m/"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "Brand page states \"General Mills will continue to own and market the Cascadian Farm brand\". In 2022 General Mills donated the Home Farm to Rodale Institute, so the farm in the story is no longer the brand's. Second source lists Cascadian Farm among General Mills' natural and organic acquisitions.",
+      "unverified": false,
+      "origin_unconfirmed": false,
+      "has_intermediate_owner": false
+    },
+    {
+      "brand": "Annie's",
+      "category": "cereal",
+      "qualifying_signal": "founder_name",
+      "signal_evidence": "Brand carries the first name of co-founder Annie Withey; second source states the company \"is named after Annie Withey\"",
+      "brand_origin": {
+        "city": "Berkeley",
+        "state": "CA",
+        "source": "https://www.cornucopia.org/2014/09/general-mills-buys-annies-820m/",
+        "lat": 37.8715,
+        "lon": -122.273
+      },
+      "direct_owner": "General Mills, Inc.",
+      "ultimate_parent": "General Mills, Inc.",
+      "parent_type": "public_company",
+      "parent_hq": {
+        "city": "Minneapolis",
+        "state": "MN",
+        "country": "USA",
+        "lat": 44.9778,
+        "lon": -93.265
+      },
+      "sources": [
+        "https://www.annies.com/about-us",
+        "https://www.cornucopia.org/2014/09/general-mills-buys-annies-820m/"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "origin_unconfirmed: Berkeley comes from the news source, not the brand's own page, because annies.com renders its story client-side. Ownership is firm: annies.com carries \"(c) 2026 General Mills\" and the second source reports the $820m 2014 acquisition. Withey had left the company by the time of the sale.",
+      "unverified": false,
+      "origin_unconfirmed": true,
+      "has_intermediate_owner": false
+    },
+    {
+      "brand": "Bear Naked",
+      "category": "granola",
+      "qualifying_signal": "family_claim",
+      "signal_evidence": "Founder-origin-story branding: two friends making granola by hand. Second source: \"Brendan Synott, who founded the company in 2002 with a friend, Kelly Flately, began by distributing hand packed lots of granola to bed and breakfasts\"",
+      "brand_origin": {
+        "city": "",
+        "state": "",
+        "source": "",
+        "lat": null,
+        "lon": null
+      },
+      "direct_owner": "WK Kellogg Co",
+      "ultimate_parent": "WK Kellogg Co",
+      "parent_type": "public_company",
+      "parent_hq": {
+        "city": "Battle Creek",
+        "state": "MI",
+        "country": "USA",
+        "lat": 42.3211,
+        "lon": -85.1797
+      },
+      "sources": [
+        "https://www.wkkellogg.com/our-foods/our-brands",
+        "https://www.foodnavigator-usa.com/Article/2012/12/10/Bear-Naked-Granola-founder-on-building-a-brand/"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "origin_unconfirmed: the brand makes no self-claimed hometown on a page I could open, so no origin is recorded and it draws no map line. Ownership is firm: Bear Naked is listed on WK Kellogg Co's own brands page. It came to Kellogg via Kashi in 2007 and stayed with WK Kellogg Co in the 2023 separation from Kellanova.",
+      "unverified": false,
+      "origin_unconfirmed": true,
+      "has_intermediate_owner": false
+    },
+    {
+      "brand": "Barbara's",
+      "category": "cereal",
+      "qualifying_signal": "founder_name",
+      "signal_evidence": "Brand carries founder Barbara Jaffe's first name; packaging returned to \"Petaluma's pastoral landscape\" and the parent's own history page says it was \"founded in Northern California in 1971 by 17-year-old Barbara Jaffe\"",
+      "brand_origin": {
+        "city": "Petaluma",
+        "state": "CA",
+        "source": "https://www.pressdemocrat.com/article/news/barbaras-bakery-rebranding-turns-to-petaluma-legacy/",
+        "lat": 38.2324,
+        "lon": -122.6367
+      },
+      "direct_owner": "Post Consumer Brands, LLC",
+      "ultimate_parent": "Post Holdings, Inc.",
+      "parent_type": "public_company",
+      "parent_hq": {
+        "city": "St. Louis",
+        "state": "MO",
+        "country": "USA",
+        "lat": 38.627,
+        "lon": -90.1994
+      },
+      "sources": [
+        "https://www.postconsumerbrands.com/our-history/",
+        "https://www.pressdemocrat.com/article/news/barbaras-bakery-rebranding-turns-to-petaluma-legacy/"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "origin_unconfirmed: Petaluma is sourced to the local newspaper rather than the brand's own page. Chain: Jaffe sold to Weetabix Co. in 1986; Post Consumer Brands later acquired the Weetabix U.S. portfolio including Barbara's. Post Consumer Brands, LLC is in Lakeville MN; its parent Post Holdings, Inc. is in St. Louis MO.",
+      "unverified": false,
+      "origin_unconfirmed": true,
+      "has_intermediate_owner": true
+    },
+    {
+      "brand": "Bob's Red Mill",
+      "category": "oatmeal",
+      "qualifying_signal": "founder_name",
+      "signal_evidence": "Founder's first name plus \"Mill\" in the brand. Own page: \"PROUDLY EMPLOYEE OWNED SINCE 2010\" and \"from Bob and his original stone mill, we have become an employee-owned business\"",
+      "brand_origin": {
+        "city": "Milwaukie",
+        "state": "OR",
+        "source": "",
+        "lat": 45.446,
+        "lon": -122.639
+      },
+      "direct_owner": "Bob's Red Mill Natural Foods, Inc.",
+      "ultimate_parent": "Bob's Red Mill Natural Foods, Inc.",
+      "parent_type": "employee_owned",
+      "parent_hq": {
+        "city": "Milwaukie",
+        "state": "OR",
+        "country": "USA",
+        "lat": 45.446,
+        "lon": -122.639
+      },
+      "sources": [
+        "https://www.bobsredmill.com/employee-owned",
+        "https://www.nceo.org/employee-ownership-blog/bob-moore-iconic-founder-bobs-red-mill-passes-away-age-94"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "origin_unconfirmed: Milwaukie is the company HQ and is not cited to a brand page I opened. Ownership is firm: the brand's own page states 100% employee ownership reached 30 April 2020, and the second source is the National Center for Employee Ownership on founder Bob Moore.",
+      "unverified": false,
+      "origin_unconfirmed": true,
+      "has_intermediate_owner": false
+    },
+    {
+      "brand": "King Arthur Baking Company",
+      "category": "mix",
+      "qualifying_signal": "founder_name",
+      "signal_evidence": "A named persona carried as the brand. Employee ownership is stated on its own site (\"100% Employee-owned\") and dated by the second source",
+      "brand_origin": {
+        "city": "Norwich",
+        "state": "VT",
+        "source": "",
+        "lat": 43.7156,
+        "lon": -72.3095
+      },
+      "direct_owner": "King Arthur Baking Company, Inc.",
+      "ultimate_parent": "King Arthur Baking Company, Inc.",
+      "parent_type": "employee_owned",
+      "parent_hq": {
+        "city": "Norwich",
+        "state": "VT",
+        "country": "USA",
+        "lat": 43.7156,
+        "lon": -72.3095
+      },
+      "sources": [
+        "https://www.kingarthurbaking.com/about/employee-ownership",
+        "https://www.veoc.org/profiles/king-arthur-baking-company"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "origin_unconfirmed: Norwich VT is not cited to a brand page I opened. Ownership is firm: the Vermont Employee Ownership Center records \"Year Founded: 1790; 1984: Moved to Vermont\" and \"Employee-Owned Since: 1996 (ESOP); 2004 (100%)\".",
+      "unverified": false,
+      "origin_unconfirmed": true,
+      "has_intermediate_owner": false
+    },
+    {
+      "brand": "Kodiak Cakes",
+      "category": "mix",
+      "qualifying_signal": "family_claim",
+      "signal_evidence": "Own story page: \"It all started in 1982 with 8-year-old Joel Clark going door-to-door with a red wagon selling brown paper bags filled with his grandfather's heirloom flapjack recipe\"",
+      "brand_origin": {
+        "city": "Park City",
+        "state": "UT",
+        "source": "",
+        "lat": 40.6461,
+        "lon": -111.498
+      },
+      "direct_owner": "L Catterton",
+      "ultimate_parent": "L Catterton",
+      "parent_type": "private_equity",
+      "parent_hq": {
+        "city": "Greenwich",
+        "state": "CT",
+        "country": "USA",
+        "lat": 41.0262,
+        "lon": -73.6282
+      },
+      "sources": [
+        "https://www.prnewswire.com/news-releases/l-catterton-completes-acquisition-of-kodiak-cakes-301323863.html",
+        "https://www.kodiakcakes.com/pages/our-story"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "origin_unconfirmed: the brand's own page places its HQ only \"in the shadow of the beautiful Wasatch Mountain range\", so the city is not cited to it. Ownership is firm: L Catterton announced completion of the acquisition on 1 July 2021.",
+      "unverified": false,
+      "origin_unconfirmed": true,
+      "has_intermediate_owner": false
+    },
+    {
+      "brand": "Arrowhead Mills",
+      "category": "oatmeal",
+      "qualifying_signal": "farm_name",
+      "signal_evidence": "\"Mills\" in the brand. Acquisition release: \"The brand was founded in 1960 in the Texas Panhandle by Frank Ford, a pioneer in organic farming\"",
+      "brand_origin": {
+        "city": "Hereford",
+        "state": "TX",
+        "source": "",
+        "lat": 34.8153,
+        "lon": -102.3991
+      },
+      "direct_owner": "Hometown Food Company",
+      "ultimate_parent": "Brynwood Partners",
+      "parent_type": "private_equity",
+      "parent_hq": {
+        "city": "Greenwich",
+        "state": "CT",
+        "country": "USA",
+        "lat": 41.0262,
+        "lon": -73.6282
+      },
+      "sources": [
+        "https://www.prnewswire.com/news-releases/hometown-food-company-acquires-the-arrowhead-mills-and-sunspire-brands-from-the-hain-celestial-group-inc-300933766.html",
+        "https://www.fooddive.com/news/hain-celestial-sells-arrowhead-mills-and-sunspire-to-private-equity-for-15/564646/"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "origin_unconfirmed: the release says \"the Texas Panhandle\"; Hereford TX is the brand's long-standing mill town and is not cited to a brand page I opened. Chain: Hometown Food Company (Chicago IL) is a portfolio company of Brynwood Partners, \"founded in 1984 and based in Greenwich, CT ... private equity firm\". Hain Celestial sold the brand for $15m in 2019, not 2025 as one search summary claimed.",
+      "unverified": false,
+      "origin_unconfirmed": true,
+      "has_intermediate_owner": true
+    },
+    {
+      "brand": "Clif Bar",
+      "category": "bar",
+      "qualifying_signal": "founder_name",
+      "signal_evidence": "Brand carries a person's first name, presented as the founder's father. Both sources place the business at its own Emeryville home",
+      "brand_origin": {
+        "city": "Emeryville",
+        "state": "CA",
+        "source": "",
+        "lat": 37.8313,
+        "lon": -122.2852
+      },
+      "direct_owner": "Clif Bar & Company",
+      "ultimate_parent": "Mondelez International, Inc.",
+      "parent_type": "public_company",
+      "parent_hq": {
+        "city": "Chicago",
+        "state": "IL",
+        "country": "USA",
+        "lat": 41.8781,
+        "lon": -87.6298
+      },
+      "sources": [
+        "https://ir.mondelezinternational.com/news-releases/news-release-details/mondelez-international-completes-acquisition-clif-bar-company-us",
+        "https://www.bakingbusiness.com/articles/56943-mondelez-completes-acquisition-of-clif-bar"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "origin_unconfirmed: the \"named for the founder's father Clifford\" story is not in either source I opened, and Emeryville is cited to the acquirer rather than the brand. Ownership is firm: \"CHICAGO, Aug. 01, 2022 ... completed the acquisition of Clif Bar & Company\", operated \"from its headquarters in Emeryville, Calif.\"",
+      "unverified": false,
+      "origin_unconfirmed": true,
+      "has_intermediate_owner": true
+    },
+    {
+      "brand": "Simple Mills",
+      "category": "mix",
+      "qualifying_signal": "farm_name",
+      "signal_evidence": "\"Mills\" in the brand name, on a baking-mix and cracker range",
+      "brand_origin": {
+        "city": "Chicago",
+        "state": "IL",
+        "source": "",
+        "lat": 41.8781,
+        "lon": -87.6298
+      },
+      "direct_owner": "Purposeful Foods Holdings, Inc.",
+      "ultimate_parent": "Flowers Foods, Inc.",
+      "parent_type": "public_company",
+      "parent_hq": {
+        "city": "Thomasville",
+        "state": "GA",
+        "country": "USA",
+        "lat": 30.8366,
+        "lon": -83.9788
+      },
+      "sources": [
+        "https://flowersfoods.com/news/news-releases/2025/flowers-foods-inc-completes-acquisition-of-simple-mills/",
+        "https://www.nasdaq.com/press-release/flowers-foods-inc-completes-acquisition-simple-mills-2025-02-21"
+      ],
+      "verified_on": "2026-09-22",
+      "notes": "unverified: only ownership_source_1 was opened and read. The second link is the same release carried by Nasdaq and is recorded for the two-source rule but not independently read, so this row is flagged. Origin city is also not cited to a brand page. Firm part: \"THOMASVILLE, Ga., Feb. 21, 2025 - Flowers Foods, Inc. (NYSE: FLO) today announced that it has completed the acquisition of Simple Mills\".",
+      "unverified": true,
+      "origin_unconfirmed": false,
+      "has_intermediate_owner": true
+    }
+  ],
+  "parents": [
+    {
+      "name": "General Mills, Inc.",
+      "parent_type": "public_company",
+      "brand_count": 2,
+      "brands": [
+        "Annie's",
+        "Cascadian Farm"
+      ],
+      "hq": {
+        "city": "Minneapolis",
+        "state": "MN",
+        "country": "USA",
+        "lat": 44.9778,
+        "lon": -93.265
+      }
+    },
+    {
+      "name": "Bob's Red Mill Natural Foods, Inc.",
+      "parent_type": "employee_owned",
+      "brand_count": 1,
+      "brands": [
+        "Bob's Red Mill"
+      ],
+      "hq": {
+        "city": "Milwaukie",
+        "state": "OR",
+        "country": "USA",
+        "lat": 45.446,
+        "lon": -122.639
+      }
+    },
+    {
+      "name": "Brynwood Partners",
+      "parent_type": "private_equity",
+      "brand_count": 1,
+      "brands": [
+        "Arrowhead Mills"
+      ],
+      "hq": {
+        "city": "Greenwich",
+        "state": "CT",
+        "country": "USA",
+        "lat": 41.0262,
+        "lon": -73.6282
+      }
+    },
+    {
+      "name": "Flowers Foods, Inc.",
+      "parent_type": "public_company",
+      "brand_count": 1,
+      "brands": [
+        "Simple Mills"
+      ],
+      "hq": {
+        "city": "Thomasville",
+        "state": "GA",
+        "country": "USA",
+        "lat": 30.8366,
+        "lon": -83.9788
+      }
+    },
+    {
+      "name": "King Arthur Baking Company, Inc.",
+      "parent_type": "employee_owned",
+      "brand_count": 1,
+      "brands": [
+        "King Arthur Baking Company"
+      ],
+      "hq": {
+        "city": "Norwich",
+        "state": "VT",
+        "country": "USA",
+        "lat": 43.7156,
+        "lon": -72.3095
+      }
+    },
+    {
+      "name": "L Catterton",
+      "parent_type": "private_equity",
+      "brand_count": 1,
+      "brands": [
+        "Kodiak Cakes"
+      ],
+      "hq": {
+        "city": "Greenwich",
+        "state": "CT",
+        "country": "USA",
+        "lat": 41.0262,
+        "lon": -73.6282
+      }
+    },
+    {
+      "name": "Mondelez International, Inc.",
+      "parent_type": "public_company",
+      "brand_count": 1,
+      "brands": [
+        "Clif Bar"
+      ],
+      "hq": {
+        "city": "Chicago",
+        "state": "IL",
+        "country": "USA",
+        "lat": 41.8781,
+        "lon": -87.6298
+      }
+    },
+    {
+      "name": "Post Holdings, Inc.",
+      "parent_type": "public_company",
+      "brand_count": 1,
+      "brands": [
+        "Barbara's"
+      ],
+      "hq": {
+        "city": "St. Louis",
+        "state": "MO",
+        "country": "USA",
+        "lat": 38.627,
+        "lon": -90.1994
+      }
+    },
+    {
+      "name": "WK Kellogg Co",
+      "parent_type": "public_company",
+      "brand_count": 1,
+      "brands": [
+        "Bear Naked"
+      ],
+      "hq": {
+        "city": "Battle Creek",
+        "state": "MI",
+        "country": "USA",
+        "lat": 42.3211,
+        "lon": -85.1797
+      }
+    }
+  ],
+  "summary": {
+    "total_brands": 10,
+    "total_parents": 9,
+    "top_n": 3,
+    "top_n_parents": [
+      {
+        "name": "General Mills, Inc.",
+        "brand_count": 2
+      },
+      {
+        "name": "Bob's Red Mill Natural Foods, Inc.",
+        "brand_count": 1
+      },
+      {
+        "name": "Brynwood Partners",
+        "brand_count": 1
+      }
+    ],
+    "top_n_brand_count": 4,
+    "top_n_share": 0.4,
+    "counts_by_parent_type": {
+      "employee_owned": 2,
+      "private_equity": 2,
+      "public_company": 6
+    },
+    "not_conglomerate_count": 2,
+    "not_conglomerate_types": [
+      "cooperative",
+      "employee_owned",
+      "family_owned",
+      "independent"
+    ],
+    "unverified_count": 1,
+    "origin_unconfirmed_count": 8,
+    "counts_by_category": {
+      "bar": 1,
+      "cereal": 3,
+      "granola": 1,
+      "mix": 3,
+      "oatmeal": 2
+    },
+    "counts_by_signal": {
+      "family_claim": 2,
+      "farm_name": 3,
+      "founder_name": 5
+    },
+    "last_verified": "2026-09-22"
+  }
+}
