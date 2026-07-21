@@ -1,0 +1,118 @@
+# Build, check, and publish the site to GitHub Pages.
+#
+# Why this file exists
+# --------------------
+# Two jobs, in order, and the order is the point.
+#
+#   checks   runs the test suite and the offline dataset validation
+#   deploy   publishes site/ to GitHub Pages
+#
+# deploy waits for checks, so a dataset with a missing source or a row with no
+# verification date cannot reach the published page. The page tells its reader
+# that every ownership claim carries two sources and a date, and this is the
+# thing that keeps that promise true.
+#
+# The Wikidata cross-check is deliberately NOT run here. It calls a free public
+# endpoint, a disagreement with it is a prompt for a human rather than a build
+# failure, and a volunteer-edited database going stale should never be able to
+# block a deploy. Run it on a laptop with `python -m pipeline.validate`.
+
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Lets the workflow be run by hand from the Actions tab, which is useful
+  # after changing a Pages setting rather than any code.
+  workflow_dispatch:
+
+# The three permissions the official Pages deployment needs, and nothing more.
+#   contents: read   to check the repository out
+#   pages: write     to publish a deployment
+#   id-token: write  to prove to Pages that this deployment came from this
+#                    workflow run, which is how deploy-pages authenticates
+#                    without a stored secret
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time. cancel-in-progress is false on purpose: cancelling
+# a half-finished deployment can leave the live site mid-swap, so a queued run
+# waits its turn instead.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: Tests and dataset validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          # 3.10 is the floor the project claims to support, so that is what
+          # gets tested. Passing on the oldest supported version means it
+          # passes on the newer ones.
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip -r requirements.txt
+
+      - name: Run the tests
+        run: python -m pytest -q
+
+      - name: Validate the dataset, offline checks only
+        # This re-runs the two-source and verified-date rules against the
+        # committed CSV. It exits non-zero if any row falls short, which fails
+        # the job and stops the deploy.
+        run: python -m pipeline.validate --offline
+
+      - name: Confirm the committed JSON matches the CSV
+        # site/data/brands.json is committed so the page works without anyone
+        # running the pipeline. That only helps if the committed file is
+        # actually current, so the build is re-run here and the result
+        # compared. A difference means someone edited the CSV and forgot to
+        # rebuild, and the page would be showing stale numbers.
+        run: |
+          cp site/data/brands.json /tmp/committed.json
+          python -m pipeline.build
+          if ! diff -q /tmp/committed.json site/data/brands.json; then
+            echo "::error::site/data/brands.json is out of date. Run 'python -m pipeline.build' and commit the result."
+            diff /tmp/committed.json site/data/brands.json || true
+            exit 1
+          fi
+          echo "Committed JSON matches the CSV."
+
+  deploy:
+    name: Deploy to Pages
+    needs: checks
+    runs-on: ubuntu-latest
+    # Naming the environment is what makes the live URL show up on the repo's
+    # Deployments panel and in the Actions run summary.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the site folder
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Only site/ is published. The dataset, the pipeline, and the tests
+          # stay in the repository for anyone who wants to check the working,
+          # but they are not part of the served site.
+          path: site
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
