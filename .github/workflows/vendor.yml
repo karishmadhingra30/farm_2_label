@@ -1,0 +1,146 @@
+# Fetch the three front-end libraries into site/vendor/ and commit them.
+#
+# Why this exists
+# ---------------
+# The page loaded D3, d3-sankey and Leaflet from a public CDN. That is the
+# normal way to do it, and it has one real cost: the page stops working
+# properly if that CDN is unreachable. This workflow removes the dependency by
+# pulling the files into the repository once, so the published site serves
+# everything from its own origin and depends on nobody.
+#
+# It is a maintenance job, not part of the build. It runs only when started by
+# hand from the Actions tab, and it commits whatever it downloads.
+#
+# Re-run it to upgrade a library: bump the version below, run it, and read the
+# checksums it prints.
+
+name: Vendor front-end libraries
+
+on:
+  workflow_dispatch:
+    inputs:
+      d3_version:
+        description: "D3 version"
+        required: true
+        default: "7.9.0"
+      sankey_version:
+        description: "d3-sankey version"
+        required: true
+        default: "0.12.3"
+      leaflet_version:
+        description: "Leaflet version"
+        required: true
+        default: "1.9.4"
+
+permissions:
+  # Needed to push the downloaded files back to the branch.
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Download the libraries
+        env:
+          D3: ${{ inputs.d3_version }}
+          SANKEY: ${{ inputs.sankey_version }}
+          LEAFLET: ${{ inputs.leaflet_version }}
+        run: |
+          set -euo pipefail
+          mkdir -p site/vendor/images
+
+          # --fail makes curl exit non-zero on a 404 instead of writing the
+          # error page into the file, which would be a very confusing bug.
+          fetch () {
+            echo "fetching $1"
+            curl -fsSL --retry 3 --retry-delay 2 "$1" -o "$2"
+          }
+
+          fetch "https://cdn.jsdelivr.net/npm/d3@${D3}/dist/d3.min.js" \
+                site/vendor/d3.min.js
+          fetch "https://cdn.jsdelivr.net/npm/d3-sankey@${SANKEY}/dist/d3-sankey.min.js" \
+                site/vendor/d3-sankey.min.js
+          fetch "https://cdn.jsdelivr.net/npm/leaflet@${LEAFLET}/dist/leaflet.js" \
+                site/vendor/leaflet.js
+          fetch "https://cdn.jsdelivr.net/npm/leaflet@${LEAFLET}/dist/leaflet.css" \
+                site/vendor/leaflet.css
+
+          # leaflet.css references these by relative path. The page uses circle
+          # markers rather than the default pin, so most are unused, but a
+          # missing file would still show up as a 404 in a reader's console.
+          for img in layers.png layers-2x.png marker-icon.png marker-icon-2x.png marker-shadow.png; do
+            fetch "https://cdn.jsdelivr.net/npm/leaflet@${LEAFLET}/dist/images/$img" \
+                  "site/vendor/images/$img"
+          done
+
+      - name: Sanity-check what was downloaded
+        run: |
+          set -euo pipefail
+          # A truncated or error-page download is the failure mode that matters,
+          # because it would look fine in a diff and break only at runtime.
+          test -s site/vendor/d3.min.js
+          test -s site/vendor/d3-sankey.min.js
+          test -s site/vendor/leaflet.js
+          test -s site/vendor/leaflet.css
+
+          grep -q "d3-sankey" site/vendor/d3-sankey.min.js
+          grep -q "Leaflet" site/vendor/leaflet.js
+          grep -q "leaflet-container" site/vendor/leaflet.css
+          # D3's bundle does not carry a banner comment, so check for a symbol
+          # the page actually calls instead.
+          grep -q "sankeyLinkHorizontal" site/vendor/d3-sankey.min.js
+
+          echo "--- sizes ---"
+          ls -la site/vendor site/vendor/images
+
+      - name: Record versions and checksums
+        env:
+          D3: ${{ inputs.d3_version }}
+          SANKEY: ${{ inputs.sankey_version }}
+          LEAFLET: ${{ inputs.leaflet_version }}
+        run: |
+          set -euo pipefail
+          {
+            echo "# Vendored front-end libraries"
+            echo
+            echo "These are unmodified copies, committed so the published page"
+            echo "depends on no third-party host. Do not hand-edit them."
+            echo
+            echo "Regenerate with the \"Vendor front-end libraries\" workflow in"
+            echo "the Actions tab, which is the only thing that should ever write"
+            echo "to this folder."
+            echo
+            echo "| file | version | licence |"
+            echo "|---|---|---|"
+            echo "| d3.min.js | ${D3} | ISC, Mike Bostock |"
+            echo "| d3-sankey.min.js | ${SANKEY} | ISC, Mike Bostock |"
+            echo "| leaflet.js, leaflet.css, images/ | ${LEAFLET} | BSD-2-Clause, Volodymyr Agafonkin |"
+            echo
+            echo "Fetched $(date -u +%Y-%m-%d) from cdn.jsdelivr.net."
+            echo
+            echo '```'
+            ( cd site/vendor && sha256sum d3.min.js d3-sankey.min.js leaflet.js leaflet.css images/*.png )
+            echo '```'
+          } > site/vendor/README.md
+          cat site/vendor/README.md
+
+      - name: Commit the vendored files
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/vendor
+          if git diff --cached --quiet; then
+            echo "Nothing changed; the vendored files are already current."
+            exit 0
+          fi
+          git commit -m "Vendor D3, d3-sankey and Leaflet into site/vendor
+
+Downloaded by the vendor workflow so the published page serves every
+library from its own origin and depends on no third-party host.
+
+Versions and SHA-256 checksums are recorded in site/vendor/README.md."
+          git push
