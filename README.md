@@ -22,9 +22,18 @@ count.
 
 ![The page's headline and summary tiles](docs/screenshot.png)
 
-The screenshot shows the headline and the summary tiles. The ownership tree and
-the map are not in it because they need D3 and Leaflet from a CDN that the
-machine this was built on could not reach. They render normally in a browser.
+**The ownership tree.** Brands on the left, owners on the right, ribbons
+coloured by the kind of owner.
+
+![The ownership tree, a Sankey diagram](docs/screenshot-tree.png)
+
+**The map.** A small ring is where the brand says it is from, a larger disc is
+its owner's headquarters, and the dashed line is the distance between the story
+and the structure. Two brands here sit alone with no line, because they are
+still run from the town they are named after. The map backdrop is blank in this
+screenshot only: the tile server was unreachable from the machine that took it.
+
+![The map, claimed origin joined to owner headquarters](docs/screenshot-map.png)
 
 ## How brands were chosen
 
@@ -90,6 +99,8 @@ two-source rule earning its keep.
         +--> tree.js       D3 Sankey: brands on the left, owners on the right
         +--> map.js        Leaflet: claimed origin --- owner headquarters
         +--> table.js      every row, every source, every date
+        |
+        +--> vendor/       D3, d3-sankey and Leaflet, committed copies
 ```
 
 The CSV is the only place a fact is entered by hand. `validate.py` checks that
@@ -98,6 +109,13 @@ each row carries what it claims to and asks Wikidata for a second opinion.
 the page displays, and writes one JSON file. That file is committed, so the page
 works even if nobody ever runs the pipeline again. The page fetches it once and
 does no other network calls, which is why a dead API can never break it.
+
+The libraries live in `site/vendor/` rather than on a CDN, fetched once by the
+"Vendor front-end libraries" workflow and checked in with their versions,
+licences and SHA-256 checksums. So every file the page needs comes from its own
+origin, and the only third-party request left is the map tiles, which have to
+come from a tile server. Re-run that workflow to upgrade a library; nothing else
+should ever write to that folder.
 
 ### Layers
 
@@ -181,6 +199,8 @@ worth more than a clean-looking dataset with a hole in it.
   parent.
 - **Wikidata was unreachable while curating**, so no row uses it as a source.
   The cross-check code is complete and runs from a laptop.
+- **The map tiles are the one remaining third-party request.** Everything else
+  is served from this site's own origin.
 
 ## Decisions
 
@@ -194,5 +214,6 @@ queue, and the decisions made during research.
 Ownership data hand-curated from company materials, filings and news reports.
 Map tiles by [CARTO](https://carto.com/attributions), map data by
 [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors. Charts
-built with [D3](https://d3js.org/) and [Leaflet](https://leafletjs.com/).
+built with [D3](https://d3js.org/) (ISC) and [Leaflet](https://leafletjs.com/)
+(BSD-2-Clause), both vendored into `site/vendor/` with their licences.
 Brand names appear as plain text; no logos or packaging images are used.

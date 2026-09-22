@@ -379,11 +379,16 @@ section + section {
   height: auto;
 }
 
-/* Sankey link. Thin, translucent, and it thickens on hover rather than
-   changing colour, so the colour keeps meaning only one thing. */
+/* Sankey link. Translucent, and it changes opacity on hover rather than
+   colour, so the colour keeps meaning only one thing.
+
+   Deliberately no `stroke` here. tree.js sets each ribbon's stroke to its
+   owner's colour as a presentation attribute, and a class rule like this one
+   beats a presentation attribute on specificity. Declaring a stroke here
+   silently repainted every ribbon grey and threw away the colour encoding.
+   The bug was invisible until the chart was rendered in a real browser. */
 .sankey__link {
   fill: none;
-  stroke: var(--border-strong);
   stroke-opacity: 0.38;
   transition: stroke-opacity 120ms ease;
 }

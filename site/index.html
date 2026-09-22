@@ -10,8 +10,13 @@
 <meta name="description" content="A sourced dataset of breakfast-aisle brands that sell themselves with a farm, a family, or a founder's name, and who owns each one today.">
 
 <!-- Leaflet's stylesheet has to load before its script draws anything, or the
-     map tiles stack up in the wrong places. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+     map tiles stack up in the wrong places.
+
+     Everything this page loads comes from its own origin. The libraries live
+     in site/vendor/, fetched once by the "Vendor front-end libraries"
+     workflow rather than from a CDN, so the page has no third-party
+     dependency at all: if GitHub Pages is up, the page works. -->
+<link rel="stylesheet" href="vendor/leaflet.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -294,10 +299,16 @@
        d3-sankey   the plugin that computes the flow layout D3 does not ship
        leaflet     the map library
      then this project's three view modules, then the bootstrap below.
+
+     These are local copies in site/vendor/, not CDN links. See
+     site/vendor/README.md for versions, licences and checksums. The
+     library-missing checks in the bootstrap below are kept anyway: they cost
+     nothing and they still catch a file that failed to load for any other
+     reason.
      ====================================================================== -->
-<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/d3-sankey.min.js"></script>
+<script src="vendor/leaflet.js"></script>
 
 <script src="tree.js"></script>
 <script src="map.js"></script>
