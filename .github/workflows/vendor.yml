@@ -137,10 +137,12 @@ jobs:
             echo "Nothing changed; the vendored files are already current."
             exit 0
           fi
-          git commit -m "Vendor D3, d3-sankey and Leaflet into site/vendor
-
-Downloaded by the vendor workflow so the published page serves every
-library from its own origin and depends on no third-party host.
-
-Versions and SHA-256 checksums are recorded in site/vendor/README.md."
+          # Separate -m flags rather than one multi-line string. A quoted
+          # string continuing at column 0 would sit outside this YAML block
+          # and break the whole workflow file, which is exactly what happened
+          # the first time this was written.
+          git commit \
+            -m "Vendor D3, d3-sankey and Leaflet into site/vendor" \
+            -m "Downloaded by the vendor workflow so the published page serves every library from its own origin and depends on no third-party host." \
+            -m "Versions and SHA-256 checksums are recorded in site/vendor/README.md."
           git push
